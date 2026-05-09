@@ -1,0 +1,44 @@
+<section class="decomd decomd-hero"><h1>decomd</h1><p>Decorate Markdown previews with small HTML comment annotations while keeping the source readable.</p></section><h2>Install</h2>
+<pre><code class="language-sh">npm install
+</code></pre>
+<p>decomd is intentionally small. It depends only on <code>marked</code>, pins npm through <code>packageManager</code>, and sets <code>min-release-age=30</code> in <code>.npmrc</code>.</p>
+<h2>Usage</h2>
+<div class="decomd decomd-column"><section class="decomd-item"><h3>Library</h3>
+<p>Use the library when another Node.js tool or preview pipeline already has Markdown content in memory, or when it should read Markdown from a file path.</p>
+<pre><code class="language-js">import {
+  render,
+  renderFile,
+  decomdCss
+} from &quot;decomd&quot;;
+
+const html = render(markdown);
+const fileHtml = await renderFile(&quot;README.md&quot;);
+const bodyHtml = render(markdown, { output: &quot;body&quot; });
+const htmlWithoutCss = render(markdown, { css: false });
+</code></pre>
+<p><code>render</code> and <code>renderFile</code> return a full HTML document by default. Use <code>output: &quot;body&quot;</code> to return HTML that can be inserted inside another document body. Bundled CSS is included by default: full output places it in the document head, and body output places it before the rendered content. Set <code>css: false</code> to exclude it. <code>decomdCss</code> exposes the same CSS string for custom bundling.</p>
+</section><section class="decomd-item"><h3>CLI</h3>
+<p>Use the CLI from <code>npx</code> when converting files, piping Markdown, or checking what a decomd annotation produces.</p>
+<pre><code class="language-sh">npx decomd --file example.md
+npx decomd --markdown &quot;# Title&quot;
+npx decomd --body-only --file example.md
+npx decomd --no-css --file example.md
+</code></pre>
+<p><code>--full</code> is the default and emits a standalone HTML document. Use <code>--body-only</code> to emit HTML suitable for embedding inside another document body. Use <code>--no-css</code> to exclude the bundled CSS.</p>
+</section></div><h2>Annotations</h2>
+<div class="decomd decomd-flex"><section class="decomd-item"><h3><code>flex</code></h3>
+<p>Place <code>&lt;!-- decomd: flex --&gt;</code> directly below a heading to group its direct child heading sections into wrapping blocks. This is useful for feature lists, service menus, or any section where the number of items should adapt to the available width.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-flex</code>. Each grouped child heading section is wrapped in <code>decomd-item</code>, so customize layout with selectors such as <code>.decomd-flex</code> and <code>.decomd-flex &gt; .decomd-item</code>.</p>
+</section><section class="decomd-item"><h3><code>column</code></h3>
+<p>Place <code>&lt;!-- decomd: column --&gt;</code> directly below a heading to arrange its direct child heading sections as columns. This is useful for comparing a small number of related options side by side.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-column</code>. Each column is wrapped in <code>decomd-item</code>, so customize widths, gaps, and responsive behavior with selectors such as <code>.decomd-column</code> and <code>.decomd-column &gt; .decomd-item</code>.</p>
+</section><section class="decomd-item"><h3><code>grid(size_x)</code></h3>
+<p>Place <code>&lt;!-- decomd: grid(240) --&gt;</code> directly below a heading to arrange its direct child heading sections in a responsive grid. The argument is the minimum item width in pixels, so larger values create wider grid cells.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-grid</code> and sets <code>--decomd-grid-min</code> inline from <code>size_x</code>. Each grid cell is wrapped in <code>decomd-item</code>, so customize the grid with selectors such as <code>.decomd-grid</code>, <code>.decomd-grid &gt; .decomd-item</code>, and the <code>--decomd-grid-min</code> custom property.</p>
+</section><section class="decomd-item"><h3><code>form</code></h3>
+<p>Place <code>&lt;!-- decomd: form --&gt;</code> immediately before a Markdown table with <code>label</code>, <code>name</code>, <code>type</code>, and <code>default</code> columns. decomd replaces that table with form fields. Add separate inline HTML or JavaScript for buttons, clipboard behavior, or submit handling.</p>
+<p>Generated HTML uses <code>form.decomd.decomd-form</code>. Each field is wrapped in <code>label.decomd-field</code>, with a <code>span</code> for the label text and either an <code>input</code> or <code>textarea</code> for the control. Customize form spacing and controls with selectors such as <code>.decomd-form</code>, <code>.decomd-field</code>, <code>.decomd-field input</code>, and <code>.decomd-field textarea</code>.</p>
+</section><section class="decomd-item"><h3><code>hero</code></h3>
+<p>Place <code>&lt;!-- decomd: hero --&gt;</code> directly below a heading to turn that heading and the following text content into a hero section. The heading becomes the main text, and the leading paragraph text becomes the subtitle.</p>
+<p>Generated HTML uses <code>section.decomd.decomd-hero</code>. The original heading level is preserved inside the hero, and the subtitle is rendered as a <code>p</code> when leading text exists. Customize the presentation with selectors such as <code>.decomd-hero</code>, <code>.decomd-hero h1</code>, <code>.decomd-hero h2</code>, and <code>.decomd-hero p</code>.</p>
+</section></div>

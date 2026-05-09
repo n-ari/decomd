@@ -1,6 +1,6 @@
 # decomd
 <!-- decomd: hero -->
-Decorate Markdown previews with small HTML comment annotations while keeping the source readable.
+**Deco**rate **M**ark**d**own previews with small HTML comment annotations while keeping the source readable.
 
 View the rendered HTML on GitHub Pages:
 [README.html](https://n-ari.github.io/decomd/README.html)
@@ -65,9 +65,9 @@ Generated HTML uses a wrapper with `decomd decomd-column`. Each column is wrappe
 
 ### `grid(size_x)`
 
-Place `<!-- decomd: grid(240) -->` directly below a heading to arrange its direct child heading sections in a responsive grid. The argument is the minimum item width in pixels, so larger values create wider grid cells.
+Place `<!-- decomd: grid(3) -->` directly below a heading to arrange its direct child heading sections in a grid with 3 columns. The argument is the number of columns.
 
-Generated HTML uses a wrapper with `decomd decomd-grid` and sets `--decomd-grid-min` inline from `size_x`. Each grid cell is wrapped in `decomd-item`, so customize the grid with selectors such as `.decomd-grid`, `.decomd-grid > .decomd-item`, and the `--decomd-grid-min` custom property.
+Generated HTML uses a wrapper with `decomd decomd-grid decomd-grid-${size_x}`. When bundled CSS is enabled, decomd adds the matching column style for the grid classes used in the rendered document. Each grid cell is wrapped in `decomd-item`, so customize the grid with selectors such as `.decomd-grid`, `.decomd-grid-3`, and `.decomd-grid > .decomd-item`.
 
 Sample: [grid.md](samples/grid.md), [grid.html](https://n-ari.github.io/decomd/samples/grid.html)
 

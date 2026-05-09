@@ -41,6 +41,45 @@ Fast markdown previews.
   assert.match(html, /<ul>/);
 });
 
+test("hero preserves inline markdown in title and subtitle", () => {
+  const html = render(`# **Product**
+<!-- decomd: hero -->
+Fast **markdown** previews with [docs](https://example.com).`);
+
+  assert.match(html, /<h1><strong>Product<\/strong><\/h1>/);
+  assert.match(html, /Fast <strong>markdown<\/strong> previews/);
+  assert.match(html, /<a href="https:\/\/example.com">docs<\/a>/);
+});
+
+test("grid size creates a column class and bundled css", () => {
+  const html = render(`# Languages
+<!-- decomd: grid(3) -->
+
+## C
+Hello.
+
+## JavaScript
+Hello.
+
+## Ruby
+Hello.`);
+
+  assert.match(html, /class="decomd decomd-grid decomd-grid-3"/);
+  assert.match(html, /\.decomd-grid-3\{grid-template-columns:repeat\(3,minmax\(0,1fr\)\)\}/);
+  assert.doesNotMatch(html, /--decomd-grid-min/);
+});
+
+test("grid dynamic css is omitted when css is disabled", () => {
+  const html = render(`# Languages
+<!-- decomd: grid(3) -->
+
+## C
+Hello.`, { css: false });
+
+  assert.match(html, /class="decomd decomd-grid decomd-grid-3"/);
+  assert.doesNotMatch(html, /\.decomd-grid-3/);
+});
+
 test("full render can omit bundled css", () => {
   const html = render("# A", { css: false });
 

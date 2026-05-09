@@ -6,7 +6,7 @@
     .decomd-flex>.decomd-item{flex:1 1 18rem}
     .decomd-column{display:flex;gap:1rem;align-items:flex-start}
     .decomd-column>.decomd-item{flex:1 1 0}
-    .decomd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--decomd-grid-min,240px),1fr));gap:1rem}
+    .decomd-grid{display:grid;gap:1rem}
     .decomd-item{min-width:0}
     .decomd-form{display:grid;gap:.75rem}
     .decomd-field{display:grid;gap:.25rem}
@@ -17,9 +17,9 @@
     </style>
   </head>
 <body>
-<section class="decomd decomd-hero"><h1>decomd</h1><p>Decorate Markdown previews with small HTML comment annotations while keeping the source readable.
+<section class="decomd decomd-hero"><h1>decomd</h1><p><strong>Deco</strong>rate <strong>M</strong>ark<strong>d</strong>own previews with small HTML comment annotations while keeping the source readable.
 View the rendered HTML on GitHub Pages:
-[README.html](https://n-ari.github.io/decomd/README.html)</p></section><h2>Install</h2>
+<a href="https://n-ari.github.io/decomd/README.html">README.html</a></p></section><h2>Install</h2>
 <pre><code class="language-sh">npm install
 </code></pre>
 <p>decomd is intentionally small. It depends only on <code>marked</code>, pins npm through <code>packageManager</code>, and sets <code>min-release-age=30</code> in <code>.npmrc</code>.</p>
@@ -54,8 +54,8 @@ npx decomd --no-css --file example.md
 <p>Place <code>&lt;!-- decomd: column --&gt;</code> directly below a heading to arrange its direct child heading sections as columns. This is useful for comparing a small number of related options side by side.</p>
 <p>Generated HTML uses a wrapper with <code>decomd decomd-column</code>. Each column is wrapped in <code>decomd-item</code>, so customize widths, gaps, and responsive behavior with selectors such as <code>.decomd-column</code> and <code>.decomd-column &gt; .decomd-item</code>.</p>
 </section><section class="decomd-item"><h3><code>grid(size_x)</code></h3>
-<p>Place <code>&lt;!-- decomd: grid(240) --&gt;</code> directly below a heading to arrange its direct child heading sections in a responsive grid. The argument is the minimum item width in pixels, so larger values create wider grid cells.</p>
-<p>Generated HTML uses a wrapper with <code>decomd decomd-grid</code> and sets <code>--decomd-grid-min</code> inline from <code>size_x</code>. Each grid cell is wrapped in <code>decomd-item</code>, so customize the grid with selectors such as <code>.decomd-grid</code>, <code>.decomd-grid &gt; .decomd-item</code>, and the <code>--decomd-grid-min</code> custom property.</p>
+<p>Place <code>&lt;!-- decomd: grid(3) --&gt;</code> directly below a heading to arrange its direct child heading sections in a grid with 3 columns. The argument is the number of columns.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-grid decomd-grid-${size_x}</code>. When bundled CSS is enabled, decomd adds the matching column style for the grid classes used in the rendered document. Each grid cell is wrapped in <code>decomd-item</code>, so customize the grid with selectors such as <code>.decomd-grid</code>, <code>.decomd-grid-3</code>, and <code>.decomd-grid &gt; .decomd-item</code>.</p>
 <p>Sample: <a href="samples/grid.md">grid.md</a>, <a href="https://n-ari.github.io/decomd/samples/grid.html">grid.html</a></p>
 </section><section class="decomd-item"><h3><code>form</code></h3>
 <p>Place <code>&lt;!-- decomd: form --&gt;</code> immediately before a Markdown table with <code>label</code>, <code>name</code>, <code>type</code>, and <code>default</code> columns. decomd replaces that table with form fields. Add separate inline HTML or JavaScript for buttons, clipboard behavior, or submit handling.</p>

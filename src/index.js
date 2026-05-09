@@ -10,22 +10,23 @@ export async function renderFile(filePath, options = {}) {
 
 export function render(markdown, options = {}) {
   const renderOptions = normalizeRenderOptions(options);
-  const { tokens } = transform(markdown, options);
+  const { tokens, dynamicCss } = transform(markdown, options);
   const body = marked.parser(tokens);
   if (renderOptions.output === "body") {
-    return renderBodyContent(body, renderOptions);
+    return renderBodyContent(body, renderOptions, dynamicCss);
   }
-  return renderFullDocument(body, renderOptions);
+  return renderFullDocument(body, renderOptions, dynamicCss);
 }
 
 export function transform(markdown, options = {}) {
   assertSafeMarkdown(markdown);
   const tokens = marked.lexer(markdown, options.marked);
-  const transformed = transformTokens(tokens);
-  return { tokens: transformed };
+  const context = { gridColumns: new Set() };
+  const transformed = transformTokens(tokens, context);
+  return { tokens: transformed, dynamicCss: renderDynamicCss(context) };
 }
 
-function transformTokens(tokens) {
+function transformTokens(tokens, context) {
   const output = [];
 
   for (let i = 0; i < tokens.length; i += 1) {
@@ -50,9 +51,9 @@ function transformTokens(tokens) {
 
       if (nextAnnotation.name === "hero") {
         const { html, rest } = renderHero(heading, sectionBody);
-        output.push(htmlToken(html), ...transformTokens(rest));
+        output.push(htmlToken(html), ...transformTokens(rest, context));
       } else {
-        const html = renderLayout(heading, sectionBody, nextAnnotation);
+        const html = renderLayout(heading, sectionBody, nextAnnotation, context);
         output.push(token, htmlToken(html));
       }
 
@@ -85,7 +86,7 @@ function findSectionEnd(tokens, start, depth) {
   return tokens.length;
 }
 
-function renderLayout(heading, sectionBody, annotation) {
+function renderLayout(heading, sectionBody, annotation, context) {
   const childDepth = heading.depth + 1;
   const chunks = [];
   let prefix = [];
@@ -105,19 +106,23 @@ function renderLayout(heading, sectionBody, annotation) {
   if (current) chunks.push(current);
 
   const prefixHtml = prefix.length ? marked.parser(prefix) : "";
-  const className = ["decomd", `decomd-${annotation.name}`].join(" ");
-  const style = annotation.name === "grid" ? gridStyle(annotation.args[0]) : "";
+  const classNames = ["decomd", `decomd-${annotation.name}`];
+  if (annotation.name === "grid") {
+    const columns = normalizeGridColumns(annotation.args[0]);
+    classNames.push(`decomd-grid-${columns}`);
+    context.gridColumns.add(columns);
+  }
+  const className = classNames.join(" ");
   const items = chunks
     .map((chunk) => `<section class="decomd-item">${marked.parser(chunk)}</section>`)
     .join("");
 
-  return `${prefixHtml}<div class="${className}"${style}>${items}</div>`;
+  return `${prefixHtml}<div class="${className}">${items}</div>`;
 }
 
-function gridStyle(value) {
-  const size = Number.parseInt(value ?? "", 10);
-  const columnMin = Number.isFinite(size) && size > 0 ? size : 240;
-  return ` style="--decomd-grid-min:${escapeHtml(String(columnMin))}px"`;
+function normalizeGridColumns(value) {
+  const columns = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(columns) && columns > 0 ? columns : 1;
 }
 
 function renderHero(heading, sectionBody) {
@@ -132,9 +137,9 @@ function renderHero(heading, sectionBody) {
     if (token.type !== "space") subtitleTokens.push(token);
   }
 
-  const title = escapeHtml(plainText(heading));
-  const subtitle = subtitleTokens.map((token) => plainText(token)).join("\n").trim();
-  const subtitleHtml = subtitle ? `<p>${escapeHtml(subtitle)}</p>` : "";
+  const title = renderInline(heading);
+  const subtitle = subtitleTokens.map(renderInline).join("\n").trim();
+  const subtitleHtml = subtitle ? `<p>${subtitle}</p>` : "";
   const html = `<section class="decomd decomd-hero"><h${heading.depth}>${title}</h${heading.depth}>${subtitleHtml}</section>`;
   return { html, rest: sectionBody.slice(restStart) };
 }
@@ -182,10 +187,11 @@ function normalizeInputType(value) {
   return /^[a-z][a-z0-9-]*$/.test(type) ? type : "text";
 }
 
-function plainText(token) {
-  if (typeof token.text === "string") return token.text;
-  if (Array.isArray(token.tokens)) return token.tokens.map(plainText).join("");
-  return "";
+function renderInline(token) {
+  if (Array.isArray(token.tokens)) {
+    return marked.Parser.parseInline(token.tokens);
+  }
+  return marked.parseInline(String(token.text ?? ""));
 }
 
 function htmlToken(text) {
@@ -223,12 +229,12 @@ function normalizeRenderOptions(options) {
   };
 }
 
-function renderBodyContent(body, options) {
-  return options.css ? `${styleTag()}\n${body}` : body;
+function renderBodyContent(body, options, dynamicCss) {
+  return options.css ? `${styleTag(dynamicCss)}\n${body}` : body;
 }
 
-function renderFullDocument(body, options) {
-  const css = options.css ? `\n    ${styleTag().replaceAll("\n", "\n    ")}\n  ` : "";
+function renderFullDocument(body, options, dynamicCss) {
+  const css = options.css ? `\n    ${styleTag(dynamicCss).replaceAll("\n", "\n    ")}\n  ` : "";
   return `<!doctype html>
 <html>
 <head>${css}</head>
@@ -237,10 +243,18 @@ ${body}</body>
 </html>`;
 }
 
-function styleTag() {
+function styleTag(dynamicCss = "") {
+  const css = [decomdCss, dynamicCss].filter(Boolean).join("\n");
   return `<style>
-${decomdCss}
+${css}
 </style>`;
+}
+
+function renderDynamicCss(context) {
+  return [...context.gridColumns]
+    .sort((a, b) => a - b)
+    .map((columns) => `.decomd-grid-${columns}{grid-template-columns:repeat(${columns},minmax(0,1fr))}`)
+    .join("\n");
 }
 
 export const decomdCss = `
@@ -248,7 +262,7 @@ export const decomdCss = `
 .decomd-flex>.decomd-item{flex:1 1 18rem}
 .decomd-column{display:flex;gap:1rem;align-items:flex-start}
 .decomd-column>.decomd-item{flex:1 1 0}
-.decomd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--decomd-grid-min,240px),1fr));gap:1rem}
+.decomd-grid{display:grid;gap:1rem}
 .decomd-item{min-width:0}
 .decomd-form{display:grid;gap:.75rem}
 .decomd-field{display:grid;gap:.25rem}

@@ -2,6 +2,8 @@
 <!-- decomd: hero -->
 **Deco**rate **M**ark**d**own previews with small HTML comment annotations while keeping the source readable.
 
+---
+
 View the rendered HTML on GitHub Pages:
 [README.html](https://n-ari.github.io/decomd/README.html)
 

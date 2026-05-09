@@ -2,6 +2,9 @@
 <!-- decomd: hero -->
 Decorate Markdown previews with small HTML comment annotations while keeping the source readable.
 
+View the rendered HTML on GitHub Pages:
+[README.html](https://n-ari.github.io/decomd/README.html)
+
 ## Install
 
 ```sh
@@ -66,11 +69,15 @@ Place `<!-- decomd: grid(240) -->` directly below a heading to arrange its direc
 
 Generated HTML uses a wrapper with `decomd decomd-grid` and sets `--decomd-grid-min` inline from `size_x`. Each grid cell is wrapped in `decomd-item`, so customize the grid with selectors such as `.decomd-grid`, `.decomd-grid > .decomd-item`, and the `--decomd-grid-min` custom property.
 
+Sample: [grid.md](samples/grid.md), [grid.html](https://n-ari.github.io/decomd/samples/grid.html)
+
 ### `form`
 
 Place `<!-- decomd: form -->` immediately before a Markdown table with `label`, `name`, `type`, and `default` columns. decomd replaces that table with form fields. Add separate inline HTML or JavaScript for buttons, clipboard behavior, or submit handling.
 
 Generated HTML uses `form.decomd.decomd-form`. Each field is wrapped in `label.decomd-field`, with a `span` for the label text and either an `input` or `textarea` for the control. Customize form spacing and controls with selectors such as `.decomd-form`, `.decomd-field`, `.decomd-field input`, and `.decomd-field textarea`.
+
+Sample: [form.md](samples/form.md), [form.html](https://n-ari.github.io/decomd/samples/form.html)
 
 ### `hero`
 

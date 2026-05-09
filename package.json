@@ -17,7 +17,8 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test"
+    "build:samples": "node scripts/build-samples.js",
+    "test": "node --test && npm run build:samples"
   },
   "engines": {
     "node": ">=20"

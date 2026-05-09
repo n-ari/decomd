@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+    .decomd-flex{display:flex;flex-wrap:wrap;gap:1rem;align-items:stretch}
+    .decomd-flex>.decomd-item{flex:1 1 18rem}
+    .decomd-column{display:flex;gap:1rem;align-items:flex-start}
+    .decomd-column>.decomd-item{flex:1 1 0}
+    .decomd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--decomd-grid-min,240px),1fr));gap:1rem}
+    .decomd-item{min-width:0}
+    .decomd-form{display:grid;gap:.75rem}
+    .decomd-field{display:grid;gap:.25rem}
+    .decomd-field input,.decomd-field textarea{font:inherit;padding:.5rem;border:1px solid #bbb;border-radius:4px}
+    .decomd-hero{text-align:center;margin:6rem auto;max-width:56rem;padding:2rem}
+    .decomd-hero h1,.decomd-hero h2,.decomd-hero h3,.decomd-hero h4,.decomd-hero h5,.decomd-hero h6{font-size:clamp(2.5rem,8vw,5rem);line-height:1.05;margin:0 0 1rem}
+    .decomd-hero p{font-size:1.25rem;margin:0;color:#555}
+    </style>
+  </head>
+<body>
+<h1>Grid Sample</h1>
+<div class="decomd decomd-grid" style="--decomd-grid-min:3px"><section class="decomd-item"><h2>C</h2>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void) {
+  printf(&quot;Hello, World!\n&quot;);
+  return 0;
+}
+</code></pre>
+</section><section class="decomd-item"><h2>C++</h2>
+<pre><code class="language-cpp">#include &lt;iostream&gt;
+
+int main() {
+  std::cout &lt;&lt; &quot;Hello, World!&quot; &lt;&lt; std::endl;
+  return 0;
+}
+</code></pre>
+</section><section class="decomd-item"><h2>Java</h2>
+<pre><code class="language-java">class Main {
+  public static void main(String[] args) {
+    System.out.println(&quot;Hello, World!&quot;);
+  }
+}
+</code></pre>
+</section><section class="decomd-item"><h2>C#</h2>
+<pre><code class="language-csharp">using System;
+
+class Program {
+  static void Main() {
+    Console.WriteLine(&quot;Hello, World!&quot;);
+  }
+}
+</code></pre>
+</section><section class="decomd-item"><h2>Rust</h2>
+<pre><code class="language-rust">fn main() {
+  println!(&quot;Hello, World!&quot;);
+}
+</code></pre>
+</section><section class="decomd-item"><h2>Go</h2>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+  fmt.Println(&quot;Hello, World!&quot;)
+}
+</code></pre>
+</section><section class="decomd-item"><h2>JavaScript</h2>
+<pre><code class="language-js">console.log(&quot;Hello, World!&quot;);
+</code></pre>
+</section><section class="decomd-item"><h2>Python</h2>
+<pre><code class="language-python">print(&quot;Hello, World!&quot;)
+</code></pre>
+</section><section class="decomd-item"><h2>Ruby</h2>
+<pre><code class="language-ruby">puts &quot;Hello, World!&quot;
+</code></pre>
+</section></div></body>
+</html>

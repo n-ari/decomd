@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+    .decomd-flex{display:flex;flex-wrap:wrap;gap:1rem;align-items:stretch}
+    .decomd-flex>.decomd-item{flex:1 1 18rem}
+    .decomd-column{display:flex;gap:1rem;align-items:flex-start}
+    .decomd-column>.decomd-item{flex:1 1 0}
+    .decomd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--decomd-grid-min,240px),1fr));gap:1rem}
+    .decomd-item{min-width:0}
+    .decomd-form{display:grid;gap:.75rem}
+    .decomd-field{display:grid;gap:.25rem}
+    .decomd-field input,.decomd-field textarea{font:inherit;padding:.5rem;border:1px solid #bbb;border-radius:4px}
+    .decomd-hero{text-align:center;margin:6rem auto;max-width:56rem;padding:2rem}
+    .decomd-hero h1,.decomd-hero h2,.decomd-hero h3,.decomd-hero h4,.decomd-hero h5,.decomd-hero h6{font-size:clamp(2.5rem,8vw,5rem);line-height:1.05;margin:0 0 1rem}
+    .decomd-hero p{font-size:1.25rem;margin:0;color:#555}
+    </style>
+  </head>
+<body>
+<h1>Form Sample</h1>
+<form class="decomd decomd-form"><label class="decomd-field"><span>Name</span><input name="name" type="text" value="Alice"></label><label class="decomd-field"><span>Email</span><input name="email" type="email" value="alice@example.com"></label></form><p><button type="button" id="copy-greeting">Copy greeting</button></p>
+<script>
+(() => {
+  const button = document.getElementById("copy-greeting");
+  button.addEventListener("click", async () => {
+    const form = document.querySelector("form.decomd-form");
+    const data = new FormData(form);
+    const name = data.get("name") || "";
+    const email = data.get("email") || "";
+    await navigator.clipboard.writeText(`hello, ${name}(${email})!`);
+  });
+})();
+</script>
+</body>
+</html>

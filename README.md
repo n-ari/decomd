@@ -7,18 +7,14 @@
 View the rendered HTML on GitHub Pages:
 [README.html](https://n-ari.github.io/decomd/README.html)
 
-## Install
-
-```sh
-npm install
-```
-
-decomd is intentionally small. It depends only on `marked`, pins npm through `packageManager`, and sets `min-release-age=30` in `.npmrc`.
-
 ## Usage
 <!-- decomd: column -->
 
 ### Library
+
+```sh
+npm install decomd
+```
 
 Use the library when another Node.js tool or preview pipeline already has Markdown content in memory, or when it should read Markdown from a file path.
 

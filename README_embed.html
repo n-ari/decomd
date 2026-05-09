@@ -1,12 +1,10 @@
 <section class="decomd decomd-hero"><h1>decomd</h1><p><strong>Deco</strong>rate <strong>M</strong>ark<strong>d</strong>own previews with small HTML comment annotations while keeping the source readable.</p></section><hr>
 <p>View the rendered HTML on GitHub Pages:
 <a href="https://n-ari.github.io/decomd/README.html">README.html</a></p>
-<h2>Install</h2>
-<pre><code class="language-sh">npm install
-</code></pre>
-<p>decomd is intentionally small. It depends only on <code>marked</code>, pins npm through <code>packageManager</code>, and sets <code>min-release-age=30</code> in <code>.npmrc</code>.</p>
 <h2>Usage</h2>
 <div class="decomd decomd-column"><section class="decomd-item"><h3>Library</h3>
+<pre><code class="language-sh">npm install decomd
+</code></pre>
 <p>Use the library when another Node.js tool or preview pipeline already has Markdown content in memory, or when it should read Markdown from a file path.</p>
 <pre><code class="language-js">import {
   render,

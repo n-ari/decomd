@@ -2,8 +2,17 @@
   "name": "decomd",
   "version": "0.1.0",
   "description": "Decorate markdown preview regions with decomd comment annotations.",
+  "author": "n-ari",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n-ari/decomd.git"
+  },
+  "homepage": "https://github.com/n-ari/decomd#readme",
+  "bugs": {
+    "url": "https://github.com/n-ari/decomd/issues"
+  },
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js"

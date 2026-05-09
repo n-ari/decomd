@@ -2,6 +2,7 @@
   "name": "decomd",
   "version": "0.1.0",
   "description": "Decorate markdown preview regions with decomd comment annotations.",
+  "license": "MIT",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
@@ -14,6 +15,7 @@
     "bin",
     "src",
     "skills",
+    "LICENSE",
     "README.md"
   ],
   "scripts": {

@@ -86,3 +86,7 @@ Sample: [form.md](samples/form.md), [form.html](https://n-ari.github.io/decomd/s
 Place `<!-- decomd: hero -->` directly below a heading to turn that heading and the following text content into a hero section. The heading becomes the main text, and the leading paragraph text becomes the subtitle.
 
 Generated HTML uses `section.decomd.decomd-hero`. The original heading level is preserved inside the hero, and the subtitle is rendered as a `p` when leading text exists. Customize the presentation with selectors such as `.decomd-hero`, `.decomd-hero h1`, `.decomd-hero h2`, and `.decomd-hero p`.
+
+## License
+
+MIT

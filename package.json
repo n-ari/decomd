@@ -2,6 +2,12 @@
   "name": "decomd",
   "version": "0.1.0",
   "description": "Decorate markdown preview regions with decomd comment annotations.",
+  "keywords": [
+    "markdown",
+    "markdown-renderer",
+    "markdown-to-html",
+    "preview"
+  ],
   "author": "n-ari",
   "license": "MIT",
   "type": "module",
@@ -23,7 +29,6 @@
   "files": [
     "bin",
     "src",
-    "skills",
     "LICENSE",
     "README.md"
   ],

@@ -7,6 +7,9 @@
 View the rendered HTML on GitHub Pages:
 [README.html](https://n-ari.github.io/decomd/README.html)
 
+Try decomd in the browser:
+[playground](https://n-ari.github.io/decomd/playground/)
+
 ## Usage
 <!-- decomd: column -->
 

@@ -1,9 +1,9 @@
-import { readFile } from "node:fs/promises";
 import { marked } from "marked";
 
 const DECOMD_RE = /^<!--\s*decomd:\s*([a-z][a-z0-9_-]*)(?:\((.*?)\))?\s*-->\s*$/i;
 
 export async function renderFile(filePath, options = {}) {
+  const { readFile } = await import("node:fs/promises");
   const input = await readFile(filePath, "utf8");
   return render(input, options);
 }

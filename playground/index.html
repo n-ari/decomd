@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>decomd Playground</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "marked": "https://esm.sh/marked@18.0.0"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main class="playground" aria-label="decomd playground">
+    <section class="pane editor-pane" aria-labelledby="editor-title">
+      <header class="pane-header">
+        <h1 id="editor-title">decomd Playground</h1>
+        <span id="status" class="status" role="status" aria-live="polite">Ready</span>
+      </header>
+      <textarea id="source" spellcheck="false" aria-label="Markdown source"></textarea>
+    </section>
+
+    <section class="pane preview-pane" aria-labelledby="preview-title">
+      <header class="pane-header">
+        <h2 id="preview-title">Rendered content</h2>
+      </header>
+      <article id="preview" class="preview" aria-live="polite"></article>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

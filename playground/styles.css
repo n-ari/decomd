@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f7f8;
+  color: #1b1f23;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+.playground {
+  display: grid;
+  grid-template-columns: minmax(20rem, .9fr) minmax(22rem, 1.1fr);
+  min-height: 100vh;
+}
+
+.pane {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  border-right: 1px solid #d9dee3;
+}
+
+.preview-pane {
+  border-right: 0;
+  background: #fff;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid #d9dee3;
+  background: #fff;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-size: .95rem;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+.status {
+  flex: 0 0 auto;
+  color: #586069;
+  font-size: .8rem;
+}
+
+#source {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  resize: none;
+  border: 0;
+  outline: none;
+  padding: 1rem;
+  font: 14px/1.6 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  color: #17202a;
+  background: #fbfcfd;
+  tab-size: 2;
+}
+
+#source:focus {
+  box-shadow: inset 0 0 0 2px #2f6feb;
+}
+
+.preview {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 1.5rem;
+  line-height: 1.6;
+}
+
+.preview > :first-child:not(style) {
+  margin-top: 0;
+}
+
+.preview img,
+.preview video,
+.preview iframe {
+  max-width: 100%;
+}
+
+.preview pre {
+  overflow: auto;
+  padding: .875rem;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.preview code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: .92em;
+}
+
+.preview table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview th,
+.preview td {
+  padding: .5rem;
+  border: 1px solid #d9dee3;
+  text-align: left;
+  vertical-align: top;
+}
+
+.render-error {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #f2b8b5;
+  border-radius: 6px;
+  color: #8a1f17;
+  background: #fff5f5;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 760px) {
+  .playground {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(18rem, 45vh) minmax(22rem, 55vh);
+  }
+
+  .pane {
+    border-right: 0;
+    border-bottom: 1px solid #d9dee3;
+  }
+
+  .preview-pane {
+    border-bottom: 0;
+  }
+}

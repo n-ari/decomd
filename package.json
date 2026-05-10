@@ -1,6 +1,6 @@
 {
   "name": "decomd",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Decorate markdown preview regions with decomd comment annotations.",
   "keywords": [
     "markdown",

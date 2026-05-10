@@ -58,7 +58,7 @@ function transformTokens(tokens, context) {
         const { html, rest } = renderHero(heading, sectionBody);
         output.push(htmlToken(html), ...transformTokens(rest, context));
       } else if (nextAnnotation.name === "accordion") {
-        const html = renderAccordion(heading, sectionBody);
+        const html = renderAccordion(heading, sectionBody, context);
         output.push(token, htmlToken(html));
       } else if (nextAnnotation.name === "tabs") {
         const html = renderTabs(heading, sectionBody, context);
@@ -79,6 +79,10 @@ function transformTokens(tokens, context) {
   }
 
   return output;
+}
+
+function renderTokens(tokens, context) {
+  return marked.parser(transformTokens(tokens, context));
 }
 
 function nextContentIndex(tokens, start) {
@@ -109,7 +113,7 @@ function findSectionEnd(tokens, start, depth) {
 function renderLayout(heading, sectionBody, annotation, context) {
   const { prefix, chunks } = collectChildSections(heading, sectionBody);
 
-  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const prefixHtml = prefix.length ? renderTokens(prefix, context) : "";
   const classNames = ["decomd", `decomd-${annotation.name}`];
   if (annotation.name === "grid") {
     const columns = normalizeGridColumns(annotation.args[0]);
@@ -118,7 +122,7 @@ function renderLayout(heading, sectionBody, annotation, context) {
   }
   const className = classNames.join(" ");
   const items = chunks
-    .map((chunk) => `<section class="decomd-item">${marked.parser(chunk)}</section>`)
+    .map((chunk) => `<section class="decomd-item">${renderTokens(chunk, context)}</section>`)
     .join("");
 
   return `${prefixHtml}<div class="${className}">${items}</div>`;
@@ -145,14 +149,14 @@ function collectChildSections(heading, sectionBody) {
   return { prefix, chunks };
 }
 
-function renderAccordion(heading, sectionBody) {
+function renderAccordion(heading, sectionBody, context) {
   const { prefix, chunks } = collectChildSections(heading, sectionBody);
-  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const prefixHtml = prefix.length ? renderTokens(prefix, context) : "";
   const items = chunks
     .map((chunk) => {
       const [childHeading, ...body] = chunk;
       const title = renderInline(childHeading);
-      const content = marked.parser(body);
+      const content = renderNestedBody(childHeading, body, context);
       return `<details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">${title}</span></summary><div class="decomd-accordion-content">${content}</div></details>`;
     })
     .join("");
@@ -162,12 +166,12 @@ function renderAccordion(heading, sectionBody) {
 
 function renderCarousel(heading, sectionBody, context) {
   const { prefix, chunks } = collectChildSections(heading, sectionBody);
-  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const prefixHtml = prefix.length ? renderTokens(prefix, context) : "";
   const groupId = nextWidgetId(context, "carousel");
   const items = chunks
     .map((chunk, index) => {
       const slideId = `${groupId}-${index}`;
-      return `<section class="decomd-item decomd-carousel-slide" id="${slideId}">${marked.parser(chunk)}</section>`;
+      return `<section class="decomd-item decomd-carousel-slide" id="${slideId}">${renderTokens(chunk, context)}</section>`;
     })
     .join("");
   const nav = chunks
@@ -184,7 +188,7 @@ function renderCarousel(heading, sectionBody, context) {
 
 function renderTabs(heading, sectionBody, context) {
   const { prefix, chunks } = collectChildSections(heading, sectionBody);
-  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const prefixHtml = prefix.length ? renderTokens(prefix, context) : "";
   const groupId = nextWidgetId(context, "tabs");
   const inputs = chunks.map((_chunk, index) => {
     const tabId = `${groupId}-${index}`;
@@ -198,14 +202,45 @@ function renderTabs(heading, sectionBody, context) {
     return `<label class="decomd-tab-trigger" for="${tabId}">${title}</label>`;
   }).join("");
   const panels = chunks.map((chunk, index) => {
-    const [, ...body] = chunk;
+    const [childHeading, ...body] = chunk;
     const tabId = `${groupId}-${index}`;
-    const content = marked.parser(body);
+    const content = renderNestedBody(childHeading, body, context);
     return `<section class="decomd-tab-panel" id="${tabId}-panel">${content}</section>`;
   }).join("");
 
   context.tabGroups.push({ groupId, count: chunks.length });
   return `${prefixHtml}<div class="decomd decomd-tabs">${inputs}<div class="decomd-tab-list">${triggers}</div><div class="decomd-tab-panels">${panels}</div></div>`;
+}
+
+function renderNestedBody(heading, body, context) {
+  const annotationIndex = nextContentIndex(body, 0);
+  const annotation = readAnnotation(body[annotationIndex]);
+  if (!annotation || annotation.name === "form") {
+    return renderTokens(body, context);
+  }
+
+  const prefix = body.slice(0, annotationIndex);
+  const sectionBody = body.slice(annotationIndex + 1);
+  const prefixHtml = prefix.length ? renderTokens(prefix, context) : "";
+
+  if (annotation.name === "hero") {
+    const { html, rest } = renderHero(heading, sectionBody);
+    return `${prefixHtml}${html}${renderTokens(rest, context)}`;
+  }
+  if (annotation.name === "accordion") {
+    return `${prefixHtml}${renderAccordion(heading, sectionBody, context)}`;
+  }
+  if (annotation.name === "tabs") {
+    return `${prefixHtml}${renderTabs(heading, sectionBody, context)}`;
+  }
+  if (annotation.name === "carousel") {
+    return `${prefixHtml}${renderCarousel(heading, sectionBody, context)}`;
+  }
+  if (["flex", "column", "grid"].includes(annotation.name)) {
+    return `${prefixHtml}${renderLayout(heading, sectionBody, annotation, context)}`;
+  }
+
+  return renderTokens(body, context);
 }
 
 function nextWidgetId(context, prefix) {

@@ -134,6 +134,124 @@ Invoices.`);
   assert.doesNotMatch(html, /<h2>Account<\/h2>/);
 });
 
+test("tabs render nested decomd annotations inside panels", () => {
+  const html = render(`# Docs
+<!-- decomd: tabs -->
+
+## FAQ
+Questions.
+
+### Common
+<!-- decomd: accordion -->
+
+#### Install
+npm install decomd
+
+#### Use
+render markdown`);
+
+  assert.match(html, /<div class="decomd decomd-tabs">/);
+  assert.match(html, /<section class="decomd-tab-panel" id="tabs-0-0-panel"><p>Questions\.<\/p>\n<h3>Common<\/h3>/);
+  assert.match(html, /<div class="decomd decomd-accordion">/);
+  assert.match(html, /<details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">Install<\/span><\/summary>/);
+  assert.doesNotMatch(html, /<!-- decomd: accordion -->/);
+});
+
+test("tabs can decorate a tab heading body directly", () => {
+  const html = render(`## FAQ
+<!-- decomd: tabs -->
+
+### Does it need client JavaScript?
+<!-- decomd: carousel -->
+
+#### yes
+yes
+
+#### no
+no
+
+### Can I use tabs?
+Yes. Try changing \`accordion\` to \`tabs\` above.`);
+
+  assert.match(html, /<div class="decomd decomd-tabs">/);
+  assert.match(html, /<section class="decomd-tab-panel" id="tabs-0-0-panel"><div class="decomd decomd-carousel">/);
+  assert.match(html, /<section class="decomd-item decomd-carousel-slide" id="carousel-1-0"><h4>yes<\/h4>/);
+  assert.match(html, /<a class="decomd-carousel-dot" href="#carousel-1-1" aria-label="no"><\/a>/);
+  assert.doesNotMatch(html, /<!-- decomd: carousel -->/);
+});
+
+test("accordion can decorate an item heading body directly", () => {
+  const html = render(`## FAQ
+<!-- decomd: accordion -->
+
+### Does it need client JavaScript?
+<!-- decomd: carousel -->
+
+#### yes
+yes
+
+#### no
+no`);
+
+  assert.match(html, /<details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">Does it need client JavaScript\?<\/span><\/summary>/);
+  assert.match(html, /<div class="decomd-accordion-content"><div class="decomd decomd-carousel">/);
+  assert.match(html, /<section class="decomd-item decomd-carousel-slide" id="carousel-0-0"><h4>yes<\/h4>/);
+  assert.doesNotMatch(html, /<!-- decomd: carousel -->/);
+});
+
+test("layout items render nested tabs and flex annotations", () => {
+  const html = render(`# Dashboard
+<!-- decomd: column -->
+
+## Left
+<!-- decomd: tabs -->
+
+### Summary
+Overview.
+
+### Details
+Deep dive.
+
+## Right
+<!-- decomd: flex -->
+
+### One
+First.
+
+### Two
+Second.`);
+
+  assert.match(html, /<div class="decomd decomd-column">/);
+  assert.match(html, /<section class="decomd-item"><h2>Left<\/h2>\n<div class="decomd decomd-tabs">/);
+  assert.match(html, /<section class="decomd-item"><h2>Right<\/h2>\n<div class="decomd decomd-flex">/);
+  assert.match(html, /#tabs-0-0:checked~\.decomd-tab-list label\[for="tabs-0-0"\]/);
+  assert.doesNotMatch(html, /<!-- decomd: tabs -->/);
+  assert.doesNotMatch(html, /<!-- decomd: flex -->/);
+});
+
+test("nested tab groups get independent ids and css", () => {
+  const html = render(`# Outer
+<!-- decomd: tabs -->
+
+## First
+### Inner
+<!-- decomd: tabs -->
+
+#### A
+Alpha.
+
+#### B
+Beta.
+
+## Second
+Done.`);
+
+  assert.match(html, /name="tabs-0" id="tabs-0-0"/);
+  assert.match(html, /name="tabs-1" id="tabs-1-0"/);
+  assert.match(html, /#tabs-0-0:checked~\.decomd-tab-list label\[for="tabs-0-0"\]/);
+  assert.match(html, /#tabs-1-0:checked~\.decomd-tab-list label\[for="tabs-1-0"\]/);
+});
+
 test("full render can omit bundled css", () => {
   const html = render("# A", { css: false });
 

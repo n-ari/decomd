@@ -32,6 +32,7 @@ npx decomd --no-css --file example.md
 </code></pre>
 <p><code>--full</code> is the default and emits a standalone HTML document. Use <code>--body-only</code> to emit HTML suitable for embedding inside another document body. Use <code>--input-html</code> when the input is simple Markdown-generated HTML instead of Markdown. Use <code>--no-css</code> to exclude the bundled CSS.</p>
 </section></div><h2>Annotations</h2>
+<p>Decorated sections can contain more decomd annotations inside their body content. For example, a tab panel or column item can include its own <code>accordion</code>, <code>carousel</code>, <code>flex</code>, <code>column</code>, <code>grid</code>, or <code>tabs</code> section, and nested tab groups receive independent generated ids.</p>
 <div class="decomd decomd-flex"><section class="decomd-item"><h3><code>flex</code></h3>
 <p>Place <code>&lt;!-- decomd: flex --&gt;</code> directly below a heading to group its direct child heading sections into wrapping blocks. This is useful for feature lists, service menus, or any section where the number of items should adapt to the available width.</p>
 <p>Generated HTML uses a wrapper with <code>decomd decomd-flex</code>. Each grouped child heading section is wrapped in <code>decomd-item</code>, so customize layout with selectors such as <code>.decomd-flex</code> and <code>.decomd-flex &gt; .decomd-item</code>.</p>

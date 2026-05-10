@@ -56,6 +56,8 @@ npx decomd --no-css --file example.md
 ## Annotations
 <!-- decomd: flex -->
 
+Decorated sections can contain more decomd annotations inside their body content. For example, a tab panel or column item can include its own `accordion`, `carousel`, `flex`, `column`, `grid`, or `tabs` section, and nested tab groups receive independent generated ids.
+
 ### `flex`
 
 Place `<!-- decomd: flex -->` directly below a heading to group its direct child heading sections into wrapping blocks. This is useful for feature lists, service menus, or any section where the number of items should adapt to the available width.

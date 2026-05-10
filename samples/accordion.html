@@ -32,65 +32,22 @@
     .decomd-hero{text-align:center;margin:6rem auto;max-width:56rem;padding:2rem}
     .decomd-hero h1,.decomd-hero h2,.decomd-hero h3,.decomd-hero h4,.decomd-hero h5,.decomd-hero h6{font-size:clamp(2.5rem,8vw,5rem);line-height:1.05;margin:0 0 1rem}
     .decomd-hero p{font-size:1.25rem;margin:0;color:#555}
-    .decomd-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
     </style>
   </head>
 <body>
-<h1>Grid Sample</h1>
-<div class="decomd decomd-grid decomd-grid-3"><section class="decomd-item"><h2>C</h2>
-<pre><code class="language-c">#include &lt;stdio.h&gt;
+<h1>Accordion Sample</h1>
+<div class="decomd decomd-accordion"><details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">C</span></summary><div class="decomd-accordion-content"><pre><code class="language-c">#include &lt;stdio.h&gt;
 
 int main(void) {
   printf(&quot;Hello, World!\n&quot;);
   return 0;
 }
 </code></pre>
-</section><section class="decomd-item"><h2>C++</h2>
-<pre><code class="language-cpp">#include &lt;iostream&gt;
-
-int main() {
-  std::cout &lt;&lt; &quot;Hello, World!&quot; &lt;&lt; std::endl;
-  return 0;
-}
+</div></details><details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">JavaScript</span></summary><div class="decomd-accordion-content"><pre><code class="language-js">console.log(&quot;Hello, World!&quot;);
 </code></pre>
-</section><section class="decomd-item"><h2>Java</h2>
-<pre><code class="language-java">class Main {
-  public static void main(String[] args) {
-    System.out.println(&quot;Hello, World!&quot;);
-  }
-}
+</div></details><details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">Python</span></summary><div class="decomd-accordion-content"><pre><code class="language-python">print(&quot;Hello, World!&quot;)
 </code></pre>
-</section><section class="decomd-item"><h2>C#</h2>
-<pre><code class="language-csharp">using System;
-
-class Program {
-  static void Main() {
-    Console.WriteLine(&quot;Hello, World!&quot;);
-  }
-}
+</div></details><details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">Ruby</span></summary><div class="decomd-accordion-content"><pre><code class="language-ruby">puts &quot;Hello, World!&quot;
 </code></pre>
-</section><section class="decomd-item"><h2>Rust</h2>
-<pre><code class="language-rust">fn main() {
-  println!(&quot;Hello, World!&quot;);
-}
-</code></pre>
-</section><section class="decomd-item"><h2>Go</h2>
-<pre><code class="language-go">package main
-
-import &quot;fmt&quot;
-
-func main() {
-  fmt.Println(&quot;Hello, World!&quot;)
-}
-</code></pre>
-</section><section class="decomd-item"><h2>JavaScript</h2>
-<pre><code class="language-js">console.log(&quot;Hello, World!&quot;);
-</code></pre>
-</section><section class="decomd-item"><h2>Python</h2>
-<pre><code class="language-python">print(&quot;Hello, World!&quot;)
-</code></pre>
-</section><section class="decomd-item"><h2>Ruby</h2>
-<pre><code class="language-ruby">puts &quot;Hello, World!&quot;
-</code></pre>
-</section></div></body>
+</div></details></div></body>
 </html>

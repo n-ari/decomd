@@ -59,6 +59,8 @@ Place `<!-- decomd: flex -->` directly below a heading to group its direct child
 
 Generated HTML uses a wrapper with `decomd decomd-flex`. Each grouped child heading section is wrapped in `decomd-item`, so customize layout with selectors such as `.decomd-flex` and `.decomd-flex > .decomd-item`.
 
+Sample: [flex.md](samples/flex.md), [flex.html](https://n-ari.github.io/decomd/samples/flex.html)
+
 ### `column`
 
 Place `<!-- decomd: column -->` directly below a heading to arrange its direct child heading sections as columns. This is useful for comparing a small number of related options side by side.
@@ -72,6 +74,30 @@ Place `<!-- decomd: grid(3) -->` directly below a heading to arrange its direct 
 Generated HTML uses a wrapper with `decomd decomd-grid decomd-grid-${size_x}`. When bundled CSS is enabled, decomd adds the matching column style for the grid classes used in the rendered document. Each grid cell is wrapped in `decomd-item`, so customize the grid with selectors such as `.decomd-grid`, `.decomd-grid-3`, and `.decomd-grid > .decomd-item`.
 
 Sample: [grid.md](samples/grid.md), [grid.html](https://n-ari.github.io/decomd/samples/grid.html)
+
+### `accordion`
+
+Place `<!-- decomd: accordion -->` directly below a heading to turn its direct child heading sections into collapsible disclosure items. The child heading text becomes the trigger, and the section body becomes the collapsible content.
+
+Generated HTML uses a wrapper with `decomd decomd-accordion`. Each item is rendered as `details.decomd-item.decomd-accordion-item`, so it works without JavaScript and can be customized with selectors such as `.decomd-accordion`, `.decomd-accordion-item`, `.decomd-accordion-title`, and `.decomd-accordion-content`.
+
+Sample: [accordion.md](samples/accordion.md), [accordion.html](https://n-ari.github.io/decomd/samples/accordion.html)
+
+### `carousel`
+
+Place `<!-- decomd: carousel -->` directly below a heading to arrange its direct child heading sections as horizontally scrollable carousel items.
+
+Generated HTML uses a wrapper with `decomd decomd-carousel`, a `decomd-carousel-viewport` for the scrollable area, `decomd-carousel-slide` sections for each child heading, and a `decomd-carousel-nav` with anchor dots for slide navigation. Bundled CSS shows one slide at a time, applies horizontal overflow and scroll snapping, and lets the nav dots jump to each slide without JavaScript. Customize the carousel with selectors such as `.decomd-carousel`, `.decomd-carousel-viewport`, `.decomd-carousel-slide`, `.decomd-carousel-nav`, and `.decomd-carousel-dot`.
+
+Sample: [carousel.md](samples/carousel.md), [carousel.html](https://n-ari.github.io/decomd/samples/carousel.html)
+
+### `tabs`
+
+Place `<!-- decomd: tabs -->` directly below a heading to turn its direct child heading sections into tabs. The child heading text becomes the tab trigger, and the section body becomes the tab panel.
+
+Generated HTML uses a wrapper with `decomd decomd-tabs`, hidden radio inputs for state, a `decomd-tab-list` for the triggers, and `decomd-tab-panels` for the panel content. Bundled CSS adds per-tab selectors for the rendered group, so the selected trigger and matching panel are shown without JavaScript while keeping all tab triggers together above the content. Customize the tab list, triggers, and panels with selectors such as `.decomd-tabs`, `.decomd-tab-list`, `.decomd-tab-trigger`, `.decomd-tab-panels`, and `.decomd-tab-panel`.
+
+Sample: [tabs.md](samples/tabs.md), [tabs.html](https://n-ari.github.io/decomd/samples/tabs.html)
 
 ### `form`
 

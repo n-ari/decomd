@@ -80,6 +80,60 @@ Hello.`, { css: false });
   assert.doesNotMatch(html, /\.decomd-grid-3/);
 });
 
+test("accordion turns direct child headings into disclosure items", () => {
+  const html = render(`# FAQ
+<!-- decomd: accordion -->
+intro
+
+## Install
+npm install decomd
+
+## Use
+render markdown`);
+
+  assert.match(html, /<h1>FAQ<\/h1>/);
+  assert.match(html, /<p>intro<\/p>/);
+  assert.match(html, /<div class="decomd decomd-accordion">/);
+  assert.match(html, /<details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">Install<\/span><\/summary>/);
+  assert.doesNotMatch(html, /<h2>Install<\/h2>/);
+});
+
+test("carousel decorates direct child headings as snap items", () => {
+  const html = render(`# Gallery
+<!-- decomd: carousel -->
+
+## One
+First.
+
+## Two
+Second.`);
+
+  assert.match(html, /<div class="decomd decomd-carousel">/);
+  assert.match(html, /<div class="decomd-carousel-viewport"><section class="decomd-item decomd-carousel-slide" id="carousel-0-0"><h2>One<\/h2>/);
+  assert.match(html, /<nav class="decomd-carousel-nav" aria-label="Carousel slides"><a class="decomd-carousel-dot" href="#carousel-0-0" aria-label="One"><\/a>/);
+  assert.match(html, /scroll-snap-type:inline mandatory/);
+});
+
+test("tabs use direct child headings as tab triggers", () => {
+  const html = render(`# Settings
+<!-- decomd: tabs -->
+
+## Account
+Email settings.
+
+## Billing
+Invoices.`);
+
+  assert.match(html, /<div class="decomd decomd-tabs">/);
+  assert.match(html, /<input class="decomd-tab-input" type="radio" name="tabs-0" id="tabs-0-0" checked>/);
+  assert.match(html, /<div class="decomd-tab-list"><label class="decomd-tab-trigger" for="tabs-0-0">Account<\/label>/);
+  assert.match(html, /<label class="decomd-tab-trigger" for="tabs-0-0">Account<\/label>/);
+  assert.match(html, /<div class="decomd-tab-panels"><section class="decomd-tab-panel" id="tabs-0-0-panel"><p>Email settings\.<\/p>/);
+  assert.match(html, /#tabs-0-0:checked~\.decomd-tab-list label\[for="tabs-0-0"\]/);
+  assert.match(html, /#tabs-0-0:checked~\.decomd-tab-panels>#tabs-0-0-panel\{display:block\}/);
+  assert.doesNotMatch(html, /<h2>Account<\/h2>/);
+});
+
 test("full render can omit bundled css", () => {
   const html = render("# A", { css: false });
 

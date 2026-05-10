@@ -7,6 +7,24 @@
     .decomd-column{display:flex;gap:1rem;align-items:flex-start}
     .decomd-column>.decomd-item{flex:1 1 0}
     .decomd-grid{display:grid;gap:1rem}
+    .decomd-carousel{display:grid;gap:.75rem}
+    .decomd-carousel-viewport{display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;scroll-behavior:smooth;border:1px solid #ddd;border-radius:6px}
+    .decomd-carousel-slide{scroll-snap-align:start;padding:1rem}
+    .decomd-carousel-nav{display:flex;justify-content:center;gap:.5rem}
+    .decomd-carousel-dot{inline-size:.625rem;block-size:.625rem;border-radius:999px;background:#bbb}
+    .decomd-carousel-dot:focus,.decomd-carousel-dot:hover{background:#111;outline:2px solid #111;outline-offset:2px}
+    .decomd-accordion{display:grid;gap:.5rem}
+    .decomd-accordion-item{border:1px solid #ddd;border-radius:6px;background:#fff}
+    .decomd-accordion-item summary{cursor:pointer;list-style:none;padding:.75rem 1rem;font-weight:600}
+    .decomd-accordion-item summary::-webkit-details-marker{display:none}
+    .decomd-accordion-title{display:block}
+    .decomd-accordion-content{padding:0 1rem 1rem}
+    .decomd-tabs{display:grid;gap:.5rem}
+    .decomd-tab-input{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    .decomd-tab-list{display:flex;flex-wrap:wrap;gap:.5rem}
+    .decomd-tab-trigger{display:grid;place-items:center;min-height:2.5rem;padding:.5rem .75rem;border:1px solid #ddd;border-radius:6px;background:#f7f7f7;cursor:pointer;font-weight:600}
+    .decomd-tab-panels{border:1px solid #ddd;border-radius:6px;padding:1rem}
+    .decomd-tab-panel{display:none}
     .decomd-item{min-width:0}
     .decomd-form{display:grid;gap:.75rem}
     .decomd-field{display:grid;gap:.25rem}

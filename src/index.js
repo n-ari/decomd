@@ -23,7 +23,7 @@ export function transform(input, options = {}) {
   assertSafeMarkdown(input);
   const markdown = transformOptions.input === "html" ? markdownFromHtml(input) : input;
   const tokens = marked.lexer(markdown, transformOptions.marked);
-  const context = { gridColumns: new Set() };
+  const context = { gridColumns: new Set(), tabGroups: [], nextWidgetId: 0 };
   const transformed = transformTokens(tokens, context);
   return { tokens: transformed, dynamicCss: renderDynamicCss(context) };
 }
@@ -47,7 +47,7 @@ function transformTokens(tokens, context) {
     const nextAnnotation = readAnnotation(tokens[nextAnnotationIndex]);
     if (
       token.type === "heading" &&
-      ["flex", "column", "grid", "hero"].includes(nextAnnotation?.name)
+      ["flex", "column", "grid", "hero", "accordion", "carousel", "tabs"].includes(nextAnnotation?.name)
     ) {
       const heading = token;
       const sectionStart = nextAnnotationIndex + 1;
@@ -57,6 +57,15 @@ function transformTokens(tokens, context) {
       if (nextAnnotation.name === "hero") {
         const { html, rest } = renderHero(heading, sectionBody);
         output.push(htmlToken(html), ...transformTokens(rest, context));
+      } else if (nextAnnotation.name === "accordion") {
+        const html = renderAccordion(heading, sectionBody);
+        output.push(token, htmlToken(html));
+      } else if (nextAnnotation.name === "tabs") {
+        const html = renderTabs(heading, sectionBody, context);
+        output.push(token, htmlToken(html));
+      } else if (nextAnnotation.name === "carousel") {
+        const html = renderCarousel(heading, sectionBody, context);
+        output.push(token, htmlToken(html));
       } else {
         const html = renderLayout(heading, sectionBody, nextAnnotation, context);
         output.push(token, htmlToken(html));
@@ -98,6 +107,24 @@ function findSectionEnd(tokens, start, depth) {
 }
 
 function renderLayout(heading, sectionBody, annotation, context) {
+  const { prefix, chunks } = collectChildSections(heading, sectionBody);
+
+  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const classNames = ["decomd", `decomd-${annotation.name}`];
+  if (annotation.name === "grid") {
+    const columns = normalizeGridColumns(annotation.args[0]);
+    classNames.push(`decomd-grid-${columns}`);
+    context.gridColumns.add(columns);
+  }
+  const className = classNames.join(" ");
+  const items = chunks
+    .map((chunk) => `<section class="decomd-item">${marked.parser(chunk)}</section>`)
+    .join("");
+
+  return `${prefixHtml}<div class="${className}">${items}</div>`;
+}
+
+function collectChildSections(heading, sectionBody) {
   const childDepth = heading.depth + 1;
   const chunks = [];
   let prefix = [];
@@ -115,20 +142,76 @@ function renderLayout(heading, sectionBody, annotation, context) {
   }
 
   if (current) chunks.push(current);
+  return { prefix, chunks };
+}
 
+function renderAccordion(heading, sectionBody) {
+  const { prefix, chunks } = collectChildSections(heading, sectionBody);
   const prefixHtml = prefix.length ? marked.parser(prefix) : "";
-  const classNames = ["decomd", `decomd-${annotation.name}`];
-  if (annotation.name === "grid") {
-    const columns = normalizeGridColumns(annotation.args[0]);
-    classNames.push(`decomd-grid-${columns}`);
-    context.gridColumns.add(columns);
-  }
-  const className = classNames.join(" ");
   const items = chunks
-    .map((chunk) => `<section class="decomd-item">${marked.parser(chunk)}</section>`)
+    .map((chunk) => {
+      const [childHeading, ...body] = chunk;
+      const title = renderInline(childHeading);
+      const content = marked.parser(body);
+      return `<details class="decomd-item decomd-accordion-item"><summary><span class="decomd-accordion-title">${title}</span></summary><div class="decomd-accordion-content">${content}</div></details>`;
+    })
     .join("");
 
-  return `${prefixHtml}<div class="${className}">${items}</div>`;
+  return `${prefixHtml}<div class="decomd decomd-accordion">${items}</div>`;
+}
+
+function renderCarousel(heading, sectionBody, context) {
+  const { prefix, chunks } = collectChildSections(heading, sectionBody);
+  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const groupId = nextWidgetId(context, "carousel");
+  const items = chunks
+    .map((chunk, index) => {
+      const slideId = `${groupId}-${index}`;
+      return `<section class="decomd-item decomd-carousel-slide" id="${slideId}">${marked.parser(chunk)}</section>`;
+    })
+    .join("");
+  const nav = chunks
+    .map((chunk, index) => {
+      const [childHeading] = chunk;
+      const slideId = `${groupId}-${index}`;
+      const title = stripHtml(renderInline(childHeading));
+      return `<a class="decomd-carousel-dot" href="#${slideId}" aria-label="${escapeHtml(title)}"></a>`;
+    })
+    .join("");
+
+  return `${prefixHtml}<div class="decomd decomd-carousel"><div class="decomd-carousel-viewport">${items}</div><nav class="decomd-carousel-nav" aria-label="Carousel slides">${nav}</nav></div>`;
+}
+
+function renderTabs(heading, sectionBody, context) {
+  const { prefix, chunks } = collectChildSections(heading, sectionBody);
+  const prefixHtml = prefix.length ? marked.parser(prefix) : "";
+  const groupId = nextWidgetId(context, "tabs");
+  const inputs = chunks.map((_chunk, index) => {
+    const tabId = `${groupId}-${index}`;
+    const checked = index === 0 ? " checked" : "";
+    return `<input class="decomd-tab-input" type="radio" name="${groupId}" id="${tabId}"${checked}>`;
+  }).join("");
+  const triggers = chunks.map((chunk, index) => {
+    const [childHeading, ...body] = chunk;
+    const tabId = `${groupId}-${index}`;
+    const title = renderInline(childHeading);
+    return `<label class="decomd-tab-trigger" for="${tabId}">${title}</label>`;
+  }).join("");
+  const panels = chunks.map((chunk, index) => {
+    const [, ...body] = chunk;
+    const tabId = `${groupId}-${index}`;
+    const content = marked.parser(body);
+    return `<section class="decomd-tab-panel" id="${tabId}-panel">${content}</section>`;
+  }).join("");
+
+  context.tabGroups.push({ groupId, count: chunks.length });
+  return `${prefixHtml}<div class="decomd decomd-tabs">${inputs}<div class="decomd-tab-list">${triggers}</div><div class="decomd-tab-panels">${panels}</div></div>`;
+}
+
+function nextWidgetId(context, prefix) {
+  const id = `${prefix}-${context.nextWidgetId}`;
+  context.nextWidgetId += 1;
+  return id;
 }
 
 function normalizeGridColumns(value) {
@@ -220,6 +303,10 @@ function escapeHtml(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+}
+
+function stripHtml(value) {
+  return String(value).replace(/<[^>]*>/g, "");
 }
 
 function markdownFromHtml(html) {
@@ -366,10 +453,20 @@ ${css}
 }
 
 function renderDynamicCss(context) {
-  return [...context.gridColumns]
+  const gridCss = [...context.gridColumns]
     .sort((a, b) => a - b)
     .map((columns) => `.decomd-grid-${columns}{grid-template-columns:repeat(${columns},minmax(0,1fr))}`)
     .join("\n");
+  const tabCss = context.tabGroups
+    .flatMap(({ groupId, count }) => Array.from({ length: count }, (_value, index) => {
+      const tabId = `${groupId}-${index}`;
+      return [
+        `#${tabId}:checked~.decomd-tab-list label[for="${tabId}"]{background:#111;color:#fff;border-color:#111}`,
+        `#${tabId}:checked~.decomd-tab-panels>#${tabId}-panel{display:block}`
+      ];
+    }).flat())
+    .join("\n");
+  return [gridCss, tabCss].filter(Boolean).join("\n");
 }
 
 export const decomdCss = `
@@ -378,6 +475,24 @@ export const decomdCss = `
 .decomd-column{display:flex;gap:1rem;align-items:flex-start}
 .decomd-column>.decomd-item{flex:1 1 0}
 .decomd-grid{display:grid;gap:1rem}
+.decomd-carousel{display:grid;gap:.75rem}
+.decomd-carousel-viewport{display:grid;grid-auto-flow:column;grid-auto-columns:100%;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;scroll-behavior:smooth;border:1px solid #ddd;border-radius:6px}
+.decomd-carousel-slide{scroll-snap-align:start;padding:1rem}
+.decomd-carousel-nav{display:flex;justify-content:center;gap:.5rem}
+.decomd-carousel-dot{inline-size:.625rem;block-size:.625rem;border-radius:999px;background:#bbb}
+.decomd-carousel-dot:focus,.decomd-carousel-dot:hover{background:#111;outline:2px solid #111;outline-offset:2px}
+.decomd-accordion{display:grid;gap:.5rem}
+.decomd-accordion-item{border:1px solid #ddd;border-radius:6px;background:#fff}
+.decomd-accordion-item summary{cursor:pointer;list-style:none;padding:.75rem 1rem;font-weight:600}
+.decomd-accordion-item summary::-webkit-details-marker{display:none}
+.decomd-accordion-title{display:block}
+.decomd-accordion-content{padding:0 1rem 1rem}
+.decomd-tabs{display:grid;gap:.5rem}
+.decomd-tab-input{position:absolute;inline-size:1px;block-size:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.decomd-tab-list{display:flex;flex-wrap:wrap;gap:.5rem}
+.decomd-tab-trigger{display:grid;place-items:center;min-height:2.5rem;padding:.5rem .75rem;border:1px solid #ddd;border-radius:6px;background:#f7f7f7;cursor:pointer;font-weight:600}
+.decomd-tab-panels{border:1px solid #ddd;border-radius:6px;padding:1rem}
+.decomd-tab-panel{display:none}
 .decomd-item{min-width:0}
 .decomd-form{display:grid;gap:.75rem}
 .decomd-field{display:grid;gap:.25rem}

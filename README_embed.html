@@ -16,20 +16,24 @@ const html = render(markdown);
 const fileHtml = await renderFile(&quot;README.md&quot;);
 const bodyHtml = render(markdown, { output: &quot;body&quot; });
 const htmlWithoutCss = render(markdown, { css: false });
+const redecoratedHtml = render(existingHtml, { input: &quot;html&quot; });
 </code></pre>
 <p><code>render</code> and <code>renderFile</code> return a full HTML document by default. Use <code>output: &quot;body&quot;</code> to return HTML that can be inserted inside another document body. Bundled CSS is included by default: full output places it in the document head, and body output places it before the rendered content. Set <code>css: false</code> to exclude it. <code>decomdCss</code> exposes the same CSS string for custom bundling.</p>
+<p>Set <code>input: &quot;html&quot;</code> when the source has already been converted from simple Markdown to HTML and still contains decomd comments. decomd will read common Markdown-generated elements such as headings, paragraphs, lists, tables, code blocks, and comments, then apply the same annotations.</p>
 </section><section class="decomd-item"><h3>CLI</h3>
 <p>Use the CLI from <code>npx</code> when converting files, piping Markdown, or checking what a decomd annotation produces.</p>
 <pre><code class="language-sh">npx decomd --file example.md
 npx decomd --markdown &quot;# Title&quot;
 npx decomd --body-only --file example.md
+npx decomd --input-html --file example.html
 npx decomd --no-css --file example.md
 </code></pre>
-<p><code>--full</code> is the default and emits a standalone HTML document. Use <code>--body-only</code> to emit HTML suitable for embedding inside another document body. Use <code>--no-css</code> to exclude the bundled CSS.</p>
+<p><code>--full</code> is the default and emits a standalone HTML document. Use <code>--body-only</code> to emit HTML suitable for embedding inside another document body. Use <code>--input-html</code> when the input is simple Markdown-generated HTML instead of Markdown. Use <code>--no-css</code> to exclude the bundled CSS.</p>
 </section></div><h2>Annotations</h2>
 <div class="decomd decomd-flex"><section class="decomd-item"><h3><code>flex</code></h3>
 <p>Place <code>&lt;!-- decomd: flex --&gt;</code> directly below a heading to group its direct child heading sections into wrapping blocks. This is useful for feature lists, service menus, or any section where the number of items should adapt to the available width.</p>
 <p>Generated HTML uses a wrapper with <code>decomd decomd-flex</code>. Each grouped child heading section is wrapped in <code>decomd-item</code>, so customize layout with selectors such as <code>.decomd-flex</code> and <code>.decomd-flex &gt; .decomd-item</code>.</p>
+<p>Sample: <a href="samples/flex.md">flex.md</a>, <a href="https://n-ari.github.io/decomd/samples/flex.html">flex.html</a></p>
 </section><section class="decomd-item"><h3><code>column</code></h3>
 <p>Place <code>&lt;!-- decomd: column --&gt;</code> directly below a heading to arrange its direct child heading sections as columns. This is useful for comparing a small number of related options side by side.</p>
 <p>Generated HTML uses a wrapper with <code>decomd decomd-column</code>. Each column is wrapped in <code>decomd-item</code>, so customize widths, gaps, and responsive behavior with selectors such as <code>.decomd-column</code> and <code>.decomd-column &gt; .decomd-item</code>.</p>
@@ -37,6 +41,18 @@ npx decomd --no-css --file example.md
 <p>Place <code>&lt;!-- decomd: grid(3) --&gt;</code> directly below a heading to arrange its direct child heading sections in a grid with 3 columns. The argument is the number of columns.</p>
 <p>Generated HTML uses a wrapper with <code>decomd decomd-grid decomd-grid-${size_x}</code>. When bundled CSS is enabled, decomd adds the matching column style for the grid classes used in the rendered document. Each grid cell is wrapped in <code>decomd-item</code>, so customize the grid with selectors such as <code>.decomd-grid</code>, <code>.decomd-grid-3</code>, and <code>.decomd-grid &gt; .decomd-item</code>.</p>
 <p>Sample: <a href="samples/grid.md">grid.md</a>, <a href="https://n-ari.github.io/decomd/samples/grid.html">grid.html</a></p>
+</section><section class="decomd-item"><h3><code>accordion</code></h3>
+<p>Place <code>&lt;!-- decomd: accordion --&gt;</code> directly below a heading to turn its direct child heading sections into collapsible disclosure items. The child heading text becomes the trigger, and the section body becomes the collapsible content.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-accordion</code>. Each item is rendered as <code>details.decomd-item.decomd-accordion-item</code>, so it works without JavaScript and can be customized with selectors such as <code>.decomd-accordion</code>, <code>.decomd-accordion-item</code>, <code>.decomd-accordion-title</code>, and <code>.decomd-accordion-content</code>.</p>
+<p>Sample: <a href="samples/accordion.md">accordion.md</a>, <a href="https://n-ari.github.io/decomd/samples/accordion.html">accordion.html</a></p>
+</section><section class="decomd-item"><h3><code>carousel</code></h3>
+<p>Place <code>&lt;!-- decomd: carousel --&gt;</code> directly below a heading to arrange its direct child heading sections as horizontally scrollable carousel items.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-carousel</code>, a <code>decomd-carousel-viewport</code> for the scrollable area, <code>decomd-carousel-slide</code> sections for each child heading, and a <code>decomd-carousel-nav</code> with anchor dots for slide navigation. Bundled CSS shows one slide at a time, applies horizontal overflow and scroll snapping, and lets the nav dots jump to each slide without JavaScript. Customize the carousel with selectors such as <code>.decomd-carousel</code>, <code>.decomd-carousel-viewport</code>, <code>.decomd-carousel-slide</code>, <code>.decomd-carousel-nav</code>, and <code>.decomd-carousel-dot</code>.</p>
+<p>Sample: <a href="samples/carousel.md">carousel.md</a>, <a href="https://n-ari.github.io/decomd/samples/carousel.html">carousel.html</a></p>
+</section><section class="decomd-item"><h3><code>tabs</code></h3>
+<p>Place <code>&lt;!-- decomd: tabs --&gt;</code> directly below a heading to turn its direct child heading sections into tabs. The child heading text becomes the tab trigger, and the section body becomes the tab panel.</p>
+<p>Generated HTML uses a wrapper with <code>decomd decomd-tabs</code>, hidden radio inputs for state, a <code>decomd-tab-list</code> for the triggers, and <code>decomd-tab-panels</code> for the panel content. Bundled CSS adds per-tab selectors for the rendered group, so the selected trigger and matching panel are shown without JavaScript while keeping all tab triggers together above the content. Customize the tab list, triggers, and panels with selectors such as <code>.decomd-tabs</code>, <code>.decomd-tab-list</code>, <code>.decomd-tab-trigger</code>, <code>.decomd-tab-panels</code>, and <code>.decomd-tab-panel</code>.</p>
+<p>Sample: <a href="samples/tabs.md">tabs.md</a>, <a href="https://n-ari.github.io/decomd/samples/tabs.html">tabs.html</a></p>
 </section><section class="decomd-item"><h3><code>form</code></h3>
 <p>Place <code>&lt;!-- decomd: form --&gt;</code> immediately before a Markdown table with <code>label</code>, <code>name</code>, <code>type</code>, and <code>default</code> columns. decomd replaces that table with form fields. Add separate inline HTML or JavaScript for buttons, clipboard behavior, or submit handling.</p>
 <p>Generated HTML uses <code>form.decomd.decomd-form</code>. Each field is wrapped in <code>label.decomd-field</code>, with a <code>span</code> for the label text and either an <code>input</code> or <code>textarea</code> for the control. Customize form spacing and controls with selectors such as <code>.decomd-form</code>, <code>.decomd-field</code>, <code>.decomd-field input</code>, and <code>.decomd-field textarea</code>.</p>

@@ -5,6 +5,7 @@ import { render } from "../src/index.js";
 const args = process.argv.slice(2);
 let css = true;
 let output = "full";
+let input = "markdown";
 let markdown = null;
 let file = null;
 
@@ -14,6 +15,8 @@ for (let i = 0; i < args.length; i += 1) {
     output = "full";
   } else if (arg === "--body-only") {
     output = "body";
+  } else if (arg === "--input-html") {
+    input = "html";
   } else if (arg === "--no-css") {
     css = false;
   } else if (arg === "--markdown") {
@@ -31,8 +34,8 @@ for (let i = 0; i < args.length; i += 1) {
 }
 
 try {
-  const input = markdown ?? await readInput(file);
-  const html = render(input, { css, output });
+  const source = markdown ?? await readInput(file);
+  const html = render(source, { css, output, input });
   process.stdout.write(html);
 } catch (error) {
   fail(error.message);
@@ -55,11 +58,13 @@ function printHelp() {
   decomd [--full] [--file path.md]
   decomd --markdown "# Title..."
   decomd --body-only --file path.md
+  decomd --input-html --file path.html
   decomd --no-css --file path.md
 
 Options:
   --full                 Render the whole markdown document to HTML.
   --body-only            Render only HTML suitable for inserting inside another body.
+  --input-html           Read simple Markdown-generated HTML instead of Markdown.
   --no-css               Do not include the bundled decomd CSS.
   --file <path>          Read markdown from a file.
   --markdown <markdown>  Read markdown from an argument.

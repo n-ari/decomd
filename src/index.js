@@ -4,13 +4,13 @@ import { marked } from "marked";
 const DECOMD_RE = /^<!--\s*decomd:\s*([a-z][a-z0-9_-]*)(?:\((.*?)\))?\s*-->\s*$/i;
 
 export async function renderFile(filePath, options = {}) {
-  const markdown = await readFile(filePath, "utf8");
-  return render(markdown, options);
+  const input = await readFile(filePath, "utf8");
+  return render(input, options);
 }
 
-export function render(markdown, options = {}) {
+export function render(input, options = {}) {
   const renderOptions = normalizeRenderOptions(options);
-  const { tokens, dynamicCss } = transform(markdown, options);
+  const { tokens, dynamicCss } = transform(input, renderOptions);
   const body = marked.parser(tokens);
   if (renderOptions.output === "body") {
     return renderBodyContent(body, renderOptions, dynamicCss);
@@ -18,9 +18,11 @@ export function render(markdown, options = {}) {
   return renderFullDocument(body, renderOptions, dynamicCss);
 }
 
-export function transform(markdown, options = {}) {
-  assertSafeMarkdown(markdown);
-  const tokens = marked.lexer(markdown, options.marked);
+export function transform(input, options = {}) {
+  const transformOptions = normalizeRenderOptions(options);
+  assertSafeMarkdown(input);
+  const markdown = transformOptions.input === "html" ? markdownFromHtml(input) : input;
+  const tokens = marked.lexer(markdown, transformOptions.marked);
   const context = { gridColumns: new Set() };
   const transformed = transformTokens(tokens, context);
   return { tokens: transformed, dynamicCss: renderDynamicCss(context) };
@@ -32,22 +34,25 @@ function transformTokens(tokens, context) {
   for (let i = 0; i < tokens.length; i += 1) {
     const token = tokens[i];
     const annotation = readAnnotation(token);
+    const nextIndex = nextContentIndex(tokens, i + 1);
 
-    if (annotation?.name === "form" && tokens[i + 1]?.type === "table") {
-      const html = renderForm(tokens[i + 1]);
+    if (annotation?.name === "form" && tokens[nextIndex]?.type === "table") {
+      const html = renderForm(tokens[nextIndex]);
       output.push(htmlToken(html));
-      i += 1;
+      i = nextIndex;
       continue;
     }
 
+    const nextAnnotationIndex = nextContentIndex(tokens, i + 1);
+    const nextAnnotation = readAnnotation(tokens[nextAnnotationIndex]);
     if (
       token.type === "heading" &&
-      ["flex", "column", "grid", "hero"].includes(readAnnotation(tokens[i + 1])?.name)
+      ["flex", "column", "grid", "hero"].includes(nextAnnotation?.name)
     ) {
       const heading = token;
-      const nextAnnotation = readAnnotation(tokens[i + 1]);
-      const sectionEnd = findSectionEnd(tokens, i + 2, heading.depth);
-      const sectionBody = tokens.slice(i + 2, sectionEnd);
+      const sectionStart = nextAnnotationIndex + 1;
+      const sectionEnd = findSectionEnd(tokens, sectionStart, heading.depth);
+      const sectionBody = tokens.slice(sectionStart, sectionEnd);
 
       if (nextAnnotation.name === "hero") {
         const { html, rest } = renderHero(heading, sectionBody);
@@ -65,6 +70,12 @@ function transformTokens(tokens, context) {
   }
 
   return output;
+}
+
+function nextContentIndex(tokens, start) {
+  let index = start;
+  while (tokens[index]?.type === "space") index += 1;
+  return index;
 }
 
 function readAnnotation(token) {
@@ -211,6 +222,104 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function markdownFromHtml(html) {
+  let source = String(html);
+  const comments = [];
+  const body = source.match(/<body(?:\s[^>]*)?>([\s\S]*?)<\/body>/i);
+  if (body) source = body[1];
+
+  source = source
+    .replace(/<style(?:\s[^>]*)?>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<!doctype[^>]*>/gi, "")
+    .replace(/<!--\s*decomd:\s*([a-z][a-z0-9_-]*)(?:\((.*?)\))?\s*-->/gi, (_match, name, args) => {
+      const suffix = args == null ? "" : `(${args})`;
+      const marker = `@@DECOMD_COMMENT_${comments.length}@@`;
+      comments.push(`<!-- decomd: ${name}${suffix} -->`);
+      return `\n${marker}\n\n`;
+    })
+    .replace(/<h([1-6])(?:\s[^>]*)?>([\s\S]*?)<\/h\1>/gi, (_match, depth, text) => {
+      return `\n${"#".repeat(Number(depth))} ${inlineMarkdownFromHtml(text).trim()}\n\n`;
+    })
+    .replace(/<p(?:\s[^>]*)?>([\s\S]*?)<\/p>/gi, (_match, text) => {
+      return `\n${inlineMarkdownFromHtml(text).trim()}\n\n`;
+    })
+    .replace(/<hr(?:\s[^>]*)?>/gi, "\n---\n\n")
+    .replace(/<pre(?:\s[^>]*)?><code(?:\s[^>]*)?>([\s\S]*?)<\/code><\/pre>/gi, (_match, text) => {
+      return `\n\`\`\`\n${decodeHtml(text).replace(/\n$/, "")}\n\`\`\`\n\n`;
+    })
+    .replace(/<table(?:\s[^>]*)?>([\s\S]*?)<\/table>/gi, (_match, table) => {
+      return `\n${markdownTableFromHtml(table)}\n\n`;
+    })
+    .replace(/<ul(?:\s[^>]*)?>([\s\S]*?)<\/ul>/gi, (_match, list) => {
+      return `\n${markdownListFromHtml(list, "-")}\n\n`;
+    })
+    .replace(/<ol(?:\s[^>]*)?>([\s\S]*?)<\/ol>/gi, (_match, list) => {
+      return `\n${markdownListFromHtml(list, "1.")}\n\n`;
+    })
+    .replace(/<blockquote(?:\s[^>]*)?>([\s\S]*?)<\/blockquote>/gi, (_match, quote) => {
+      return inlineMarkdownFromHtml(quote)
+        .split(/\r?\n/)
+        .map((line) => `> ${line.trim()}`)
+        .join("\n");
+    })
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(?:section|article|main|div)>/gi, "\n\n")
+    .replace(/<(?:section|article|main|div)(?:\s[^>]*)?>/gi, "\n\n")
+    .replace(/<\/?[^>]+>/g, "");
+
+  comments.forEach((comment, index) => {
+    source = source.replaceAll(`@@DECOMD_COMMENT_${index}@@`, comment);
+  });
+
+  return decodeHtml(source).replace(/\n{3,}/g, "\n\n").trimStart();
+}
+
+function markdownTableFromHtml(table) {
+  const rows = [...table.matchAll(/<tr(?:\s[^>]*)?>([\s\S]*?)<\/tr>/gi)]
+    .map(([, row]) => [...row.matchAll(/<t[hd](?:\s[^>]*)?>([\s\S]*?)<\/t[hd]>/gi)]
+      .map(([, cell]) => inlineMarkdownFromHtml(cell).trim().replaceAll("|", "\\|")))
+    .filter((cells) => cells.length);
+
+  if (!rows.length) return "";
+  const [header, ...body] = rows;
+  const separator = header.map(() => "---");
+  return [header, separator, ...body]
+    .map((cells) => `| ${cells.join(" | ")} |`)
+    .join("\n");
+}
+
+function markdownListFromHtml(list, marker) {
+  return [...list.matchAll(/<li(?:\s[^>]*)?>([\s\S]*?)<\/li>/gi)]
+    .map(([, item]) => `${marker} ${inlineMarkdownFromHtml(item).trim()}`)
+    .join("\n");
+}
+
+function inlineMarkdownFromHtml(html) {
+  return decodeHtml(String(html)
+    .replace(/<strong(?:\s[^>]*)?>([\s\S]*?)<\/strong>/gi, "**$1**")
+    .replace(/<b(?:\s[^>]*)?>([\s\S]*?)<\/b>/gi, "**$1**")
+    .replace(/<em(?:\s[^>]*)?>([\s\S]*?)<\/em>/gi, "*$1*")
+    .replace(/<i(?:\s[^>]*)?>([\s\S]*?)<\/i>/gi, "*$1*")
+    .replace(/<code(?:\s[^>]*)?>([\s\S]*?)<\/code>/gi, "`$1`")
+    .replace(/<a\s+[^>]*href=(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi, "[$3]($2)")
+    .replace(/<img\s+[^>]*src=(["'])(.*?)\1[^>]*alt=(["'])(.*?)\3[^>]*>/gi, "![$4]($2)")
+    .replace(/<img\s+[^>]*alt=(["'])(.*?)\1[^>]*src=(["'])(.*?)\3[^>]*>/gi, "![$2]($4)")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/?[^>]+>/g, ""));
+}
+
+function decodeHtml(value) {
+  return String(value)
+    .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
 function assertSafeMarkdown(markdown) {
   if (String(markdown).includes("\t\v\n")) {
     throw new Error("Input contains a control-character sequence rejected before Markdown parsing.");
@@ -222,10 +331,16 @@ function normalizeRenderOptions(options) {
   if (!["full", "body"].includes(output)) {
     throw new Error(`Unknown output type: ${output}`);
   }
+  const input = options.input ?? "markdown";
+  if (!["markdown", "html"].includes(input)) {
+    throw new Error(`Unknown input type: ${input}`);
+  }
 
   return {
     output,
-    css: options.css ?? true
+    input,
+    css: options.css ?? true,
+    marked: options.marked
   };
 }
 

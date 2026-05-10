@@ -102,6 +102,50 @@ test("body output can omit bundled css", () => {
   assert.equal(html, "<h1>A</h1>\n");
 });
 
+test("html input decorates simple markdown-generated sections", () => {
+  const html = render(`<h1>A</h1>
+<!-- decomd: flex -->
+<p>intro</p>
+<h2>B</h2>
+<p>body</p>
+<h2>C</h2>
+<p>body</p>`, { input: "html" });
+
+  assert.match(html, /<h1>A<\/h1>/);
+  assert.match(html, /decomd-flex/);
+  assert.match(html, /<p>intro<\/p>/);
+  assert.match(html, /<section class="decomd-item"><h2>B<\/h2>/);
+});
+
+test("html input can use a full document body", () => {
+  const html = render(`<!doctype html>
+<html>
+<head><style>body{color:red}</style></head>
+<body>
+<h1>Product</h1>
+<!-- decomd: hero -->
+<p>Fast <strong>markdown</strong> previews.</p>
+</body>
+</html>`, { input: "html", output: "body", css: false });
+
+  assert.match(html, /<section class="decomd decomd-hero">/);
+  assert.match(html, /<h1>Product<\/h1>/);
+  assert.match(html, /Fast <strong>markdown<\/strong> previews\./);
+  assert.doesNotMatch(html, /body\{color:red\}/);
+});
+
+test("html input converts markdown tables for form annotations", () => {
+  const html = render(`<!-- decomd: form -->
+<table>
+<thead><tr><th>label</th><th>name</th><th>type</th><th>default</th></tr></thead>
+<tbody><tr><td>Email</td><td>email</td><td>email</td><td>a@example.com</td></tr></tbody>
+</table>`, { input: "html" });
+
+  assert.match(html, /<form class="decomd decomd-form">/);
+  assert.match(html, /<input name="email" type="email" value="a@example.com">/);
+  assert.doesNotMatch(html, /<table>/);
+});
+
 test("rejects unsafe control-character parser trigger", () => {
   assert.throws(() => render("\t\v\n"), /control-character sequence/);
 });

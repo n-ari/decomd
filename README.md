@@ -29,9 +29,12 @@ const html = render(markdown);
 const fileHtml = await renderFile("README.md");
 const bodyHtml = render(markdown, { output: "body" });
 const htmlWithoutCss = render(markdown, { css: false });
+const redecoratedHtml = render(existingHtml, { input: "html" });
 ```
 
 `render` and `renderFile` return a full HTML document by default. Use `output: "body"` to return HTML that can be inserted inside another document body. Bundled CSS is included by default: full output places it in the document head, and body output places it before the rendered content. Set `css: false` to exclude it. `decomdCss` exposes the same CSS string for custom bundling.
+
+Set `input: "html"` when the source has already been converted from simple Markdown to HTML and still contains decomd comments. decomd will read common Markdown-generated elements such as headings, paragraphs, lists, tables, code blocks, and comments, then apply the same annotations.
 
 ### CLI
 
@@ -41,10 +44,11 @@ Use the CLI from `npx` when converting files, piping Markdown, or checking what 
 npx decomd --file example.md
 npx decomd --markdown "# Title"
 npx decomd --body-only --file example.md
+npx decomd --input-html --file example.html
 npx decomd --no-css --file example.md
 ```
 
-`--full` is the default and emits a standalone HTML document. Use `--body-only` to emit HTML suitable for embedding inside another document body. Use `--no-css` to exclude the bundled CSS.
+`--full` is the default and emits a standalone HTML document. Use `--body-only` to emit HTML suitable for embedding inside another document body. Use `--input-html` when the input is simple Markdown-generated HTML instead of Markdown. Use `--no-css` to exclude the bundled CSS.
 
 ## Annotations
 <!-- decomd: flex -->
